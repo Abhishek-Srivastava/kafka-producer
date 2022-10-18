@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-producer
+  namespace: gc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-producer
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: kafka-producer
+    spec:
+      containers:
+      - command:
+        - /kafka-producer
+        env:
+        - name: LOG_LEVEL
+          value: Info
+        image: localregistry.io:5047/mw/kafka-producer:latest
+        imagePullPolicy: Always
+        name: kafka-producer
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - effect: NoSchedule
+        key: location
+        operator: Equal
+        value: gc
